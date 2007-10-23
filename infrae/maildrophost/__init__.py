@@ -4,7 +4,7 @@
 ## Author : Sylvain Viollon
 ## Email : sylvain@infrae.com
 ## Creation Date : Tue Oct 23 09:44:38 2007 CEST
-## Last modification : Tue Oct 23 10:26:54 2007 CEST
+## Last modification : Tue Oct 23 19:06:25 2007 CEST
 ############################################
 
 __author__ ="sylvain@infrae.com"
@@ -41,7 +41,6 @@ class Recipe:
             if not os.path.exists(fname):
                 f = open(fname, 'wb')
                 try:
-                    print self.url
                     f.write(urllib2.urlopen(self.url).read())
                 except:
                     os.remove(fname)
@@ -79,7 +78,7 @@ class Recipe:
         if not os.path.exists(mail_dir):
             os.makedirs(mail_dir)
 
-        config_option = dict(smtp_host=self.options.get('smtp_host', 'locahost'),
+        config_option = dict(smtp_host=self.options.get('smtp_host', 'localhost'),
                              smtp_port=self.options.get('smtp_port', '25'),
                              maildrop_dir=mail_dir,
                              executable=self.buildout['buildout']['executable'])

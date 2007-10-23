@@ -11,7 +11,7 @@ prepare a maildrophost server. Use::
 
   [maildrophost]
   recipe = infrae.maildrophost
-  smtp_server = localhost
+  smtp_host = localhost
   smtp_port = 25
 
 
