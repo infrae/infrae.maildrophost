@@ -18,7 +18,7 @@ setup(name = name,
 
       packages = find_packages(),
       namespace_packages = ['infrae'],
-      install_requires = ['zc.buildout', 'setuptools'],
+      install_requires = ['zc.buildout', 'zc.recipe.egg', 'setuptools'],
       entry_points = {'zc.buildout':
                       ['default = %s:Recipe' % name]},
     )

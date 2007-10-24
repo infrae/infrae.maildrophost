@@ -16,6 +16,6 @@ prepare a maildrophost server. Use::
 
 
 This will install MaildropHost, create configurtion files for the deamon,
-and put start/stop script in the ``bin`` directory of the buildout tree.
+and put a start/stop script in the ``bin`` directory of the buildout tree.
 
 

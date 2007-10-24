@@ -4,7 +4,7 @@
 ## Author : Sylvain Viollon
 ## Email : sylvain@infrae.com
 ## Creation Date : Tue Oct 23 09:44:38 2007 CEST
-## Last modification : Tue Oct 23 19:06:25 2007 CEST
+## Last modification : Wed Oct 24 10:15:08 2007 CEST
 ############################################
 
 __author__ ="sylvain@infrae.com"
@@ -12,6 +12,7 @@ __format__ ="plaintext"
 __version__ ="$Id$"
 
 import os, re, shutil, tempfile, urllib2, urlparse
+import zc.buildout, zc.recipe.egg
 import setuptools
 
 class Recipe:
@@ -24,6 +25,11 @@ class Recipe:
             self.buildout['buildout']['parts-directory'], self.name)
         self.product_location = os.path.join(self.location, 'MaildropHost')
         self.url = options['url']
+        self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
+        self.mail_dir = self.options.get('mail-dir',
+                                         os.path.sep.join(('var', 'maildrop',)))
+        self.mail_dir = os.path.join(self.buildout['buildout']['directory'],
+                                     self.mail_dir)
 
     def install(self):
         """
@@ -55,32 +61,21 @@ class Recipe:
         finally:
             shutil.rmtree(tmp)
 
-        try:
-            self._build_config()
-            self._build_script()
-        except:
-            shutil.rmtree(self.location)
-            raise
 
-        return self.location
+        return self.update()
 
     def _build_config(self):
         """
         Create the config file for the maildrop server ;
         Create directory used by the maildrop server.
         """
-        mail_dir = self.options.get('mail-dir',
-                                    os.path.sep.join(('var', 'maildrop',)))
-        mail_dir = os.path.join(self.buildout['buildout']['directory'],
-                                mail_dir)
-
-
-        if not os.path.exists(mail_dir):
-            os.makedirs(mail_dir)
+        
+        if not os.path.exists(self.mail_dir):
+            os.makedirs(self.mail_dir)
 
         config_option = dict(smtp_host=self.options.get('smtp_host', 'localhost'),
                              smtp_port=self.options.get('smtp_port', '25'),
-                             maildrop_dir=mail_dir,
+                             maildrop_dir=self.mail_dir,
                              executable=self.buildout['buildout']['executable'])
 
         config_filename = os.path.join(self.product_location, 'config.py')
@@ -95,20 +90,34 @@ class Recipe:
         Create the startup script in the bin directory.
         """
 
+        requirements, ws = self.egg.working_set(['infrae.maildrophost'])
+
+        config = dict(base=self.product_location,
+                      pidfile=os.path.join(self.mail_dir, 'maildrop.pid'))
+
+        zc.buildout.easy_install.scripts(
+            [(self.name, 'infrae.maildrophost.ctl', 'main')],
+            ws, self.options['executable'], self.options['bin-directory'],
+            arguments=('%r, sys.argv[1:]' % config)
+            )
+
 
     def update(self):
         """
         Update the maildrophost server
         """
 
+        try:
+            self._build_config()
+            self._build_script()
+        except:
+            shutil.rmtree(self.location)
+            raise
+
+        return self.location
 
 
 
-def uninstall(name, options):
-    """
-    Remove the maildrophost server.
-    """
-    shutil.rmtree(self.location)
 
 
 maildrop_config_template="""
