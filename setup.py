@@ -4,21 +4,17 @@ name = "infrae.maildrophost"
 setup(name = name,
       version = "0.1",
       author = "Sylvain Viollon",
-      author_email = "sylvain@infrae.com",
-      description = "Install and setup maildrophost server",
-      long_description = """
-      Recipe to download, install MaildropHost Zope product,
-      create and configure a maildrop host server in the buildout tree.
-      """,
+      author_email = "info@infrae.com",
+      description = "Recipe to install and setup maildrophost server",
+      long_description = open('README.txt').read(),
       license = "ZPL 2.1",
-      keywords = "buildout",
+      keywords = "maildrophost buildout",
       classifiers = ["Framework :: Buildout",
                      ],
-      url = 'http://www.python.org/pypi/'+name,
-
+      url = 'http://www.python.org/pypi/' + name,
       packages = find_packages(),
       namespace_packages = ['infrae'],
-      install_requires = ['zc.buildout', 'zc.recipe.egg', 'setuptools'],
+      install_requires = ['zc.buildout', 'setuptools'],
       entry_points = {'zc.buildout':
                       ['default = %s:Recipe' % name]},
     )
