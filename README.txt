@@ -21,6 +21,9 @@ This will install MaildropHost, create configuration files for the
 daemon, and put a start/stop script named in the ``bin`` directory of
 the buildout tree.
 
+Spool and PID files are put by default in the ``var/maildrop``
+directory, so data is preserved when update (if there is any
+data). This setting can be overrided with the ``mail-dir`` option.
 
 Latest version
 --------------
