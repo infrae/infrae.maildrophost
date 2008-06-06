@@ -8,14 +8,23 @@ configuration than the Zope product.
 Example in buildout::
 
   [buildout]
-  parts = maildrophost
+  parts = 
+      maildrophost
+      instance
   
-
   [maildrophost]
   recipe = infrae.maildrophost
   smtp_host = localhost
   smtp_port = 25
   url = http://www.dataflake.org/software/maildrophost/maildrophost_1.20/MaildropHost-1.20.tgz
+
+  [instance]
+  ...
+  products =
+       ...
+       ${maildrophost:location}
+       ...
+  ...
 
 This will install MaildropHost, create configuration files for the
 daemon, and put a start/stop script named in the ``bin`` directory of
