@@ -4,7 +4,7 @@
 ## Author : Sylvain Viollon
 ## Email : sylvain@infrae.com
 ## Creation Date : Tue Oct 23 09:44:38 2007 CEST
-## Last modification : Wed Oct 24 10:15:08 2007 CEST
+## Last modification : Fri Jun  6 15:22:50 2008 CEST
 ############################################
 
 __author__ ="sylvain@infrae.com"
@@ -21,8 +21,10 @@ class Recipe:
         self.buildout = buildout
         self.name = name
         self.options = options
-        self.location = os.path.join(
-            self.buildout['buildout']['parts-directory'], self.name)
+        self.location = options.get('target',
+                                    os.path.join(self.buildout['buildout']['parts-directory'], 
+                                                 self.name))
+        options['location'] = self.location
         self.product_location = os.path.join(self.location, 'MaildropHost')
         self.url = options['url']
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
@@ -56,7 +58,8 @@ class Recipe:
                 
             setuptools.archive_util.unpack_archive(fname, tmp)
             files = os.listdir(tmp)
-            os.mkdir(self.location)
+            if not os.path.isdir(self.location):
+                os.mkdir(self.location)
             shutil.move(os.path.join(tmp, files[0]), self.product_location)
         finally:
             shutil.rmtree(tmp)
@@ -76,7 +79,10 @@ class Recipe:
         config_option = dict(smtp_host=self.options.get('smtp_host', 'localhost'),
                              smtp_port=self.options.get('smtp_port', '25'),
                              maildrop_dir=self.mail_dir,
-                             executable=self.buildout['buildout']['executable'])
+                             executable=self.buildout['buildout']['executable'],
+                             login=self.options.get('login', ''),
+                             password=self.options.get('password', ''),
+                             poll_interval=self.options.get('poll_interval', '120'))
 
         config_filename = os.path.join(self.product_location, 'config.py')
         config = open(config_filename, 'wb')
@@ -128,15 +134,15 @@ MAILDROP_VAR="%(maildrop_dir)s"
 SMTP_HOST="%(smtp_host)s"
 SMTP_PORT=%(smtp_port)s
 
-MAILDROP_INTERVAL=120
+MAILDROP_INTERVAL=%(poll_interval)s
 DEBUG=0
 DEBUG_RECEIVER=""
 
 MAILDROP_BATCH=0
 MAILDROP_TLS=0
 
-MAILDROP_LOGIN=""
-MAILDROP_PASSWORD=""
+MAILDROP_LOGIN="%(login)s"
+MAILDROP_PASSWORD="%(password)s"
 
 WAIT_INTERVAL=0.0
 ADD_MESSAGEID=0

@@ -25,6 +25,19 @@ Spool and PID files are put by default in the ``var/maildrop``
 directory, so data is preserved when update (if there is any
 data). This setting can be overrided with the ``mail-dir`` option.
 
+You can use the ``target`` option to specify a different folder to
+install the product, for instance if you already have a
+``dist-products`` parts::
+        
+  target = ${dist-products:location}
+
+As well, you can use ``login`` and ``password`` to define an
+authentication against the SMTP server. 
+
+``poll_interval`` must be an integer which define the interval in
+seconds between two check for new mail in the spool directory. Default
+is 120 seconds.
+
 Latest version
 --------------
 
