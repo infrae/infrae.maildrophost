@@ -127,9 +127,9 @@ class Recipe:
 
 
 maildrop_config_template="""
-PYTHON="%(executable)s"
-MAILDROP_HOME="%(maildrop_dir)s"
-MAILDROP_VAR="%(maildrop_dir)s"
+PYTHON=r"%(executable)s"
+MAILDROP_HOME=r"%(maildrop_dir)s"
+MAILDROP_VAR=r"%(maildrop_dir)s"
 
 SMTP_HOST="%(smtp_host)s"
 SMTP_PORT=%(smtp_port)s

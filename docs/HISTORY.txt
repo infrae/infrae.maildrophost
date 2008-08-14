@@ -2,6 +2,11 @@
 History
 =======
 
+1.0.1
+-----
+
+* Fix the config file for Windows paths.
+
 1.0
 ---
 
