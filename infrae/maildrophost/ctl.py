@@ -5,6 +5,10 @@ import os, signal, sys
 
 def maildrop_start(config):
     mconfig = os.path.join(config['base'], 'config.py')
+    if not os.path.isfile(mconfig):
+        # probably using maildrophost >= 1.22
+        mconfig = os.path.join(config['base'], 'config')
+    
     mscript = os.path.sep.join(('maildrop', 'maildrop.py'))
     mscript = os.path.join(config['base'], mscript)
     os.execlp(sys.executable, sys.executable, mscript, mconfig)
