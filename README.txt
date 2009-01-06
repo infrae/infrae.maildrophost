@@ -16,7 +16,7 @@ Example in buildout::
   recipe = infrae.maildrophost
   smtp_host = localhost
   smtp_port = 25
-  url = http://www.dataflake.org/software/maildrophost/maildrophost_1.20/MaildropHost-1.20.tgz
+  version = 1.22
 
   [instance]
   ...
@@ -46,6 +46,14 @@ authentication against the SMTP server.
 ``poll_interval`` must be an integer which define the interval in
 seconds between two check for new mail in the spool directory. Default
 is 120 seconds.
+
+The version option will be used to generate the download url:
+http://www.dataflake.org/software/maildrophost/maildrophost_<version>/MaildropHost-<version>.tgz
+In recent versions of maildrophost (>= 1.22) the config file has changed name,
+setting the version option will make the recipe choose the right name.
+
+It is also possible to override the url by setting a url option
+
 
 Latest version
 --------------

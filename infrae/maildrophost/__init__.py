@@ -15,6 +15,9 @@ import os, re, shutil, tempfile, urllib2, urlparse
 import zc.buildout, zc.recipe.egg
 import setuptools
 
+URL = ('http://www.dataflake.org/software/maildrophost/'
+       'maildrophost_%s/MaildropHost-%s.tgz')
+
 class Recipe:
 
     def __init__(self, buildout, name, options):
@@ -22,11 +25,16 @@ class Recipe:
         self.name = name
         self.options = options
         self.location = options.get('target',
-                                    os.path.join(self.buildout['buildout']['parts-directory'], 
-                                                 self.name))
+                                    os.path.join(
+            self.buildout['buildout']['parts-directory'], 
+            self.name))
         options['location'] = self.location
         self.product_location = os.path.join(self.location, 'MaildropHost')
-        self.url = options['url']
+        self.url = options.get('url')
+        if self.url is None:
+            version = options.get('version')
+            self.url = URL % (version, version)
+
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
         self.mail_dir = self.options.get('mail-dir',
                                          os.path.sep.join(('var', 'maildrop',)))
@@ -84,7 +92,12 @@ class Recipe:
                              password=self.options.get('password', ''),
                              poll_interval=self.options.get('poll_interval', '120'))
 
-        config_filename = os.path.join(self.product_location, 'config.py')
+        version = self.options.get('version', '0.00')
+        major, minor = version.split('.')
+        if int(major) < 2 and int(minor) < 22:
+            config_filename = os.path.join(self.product_location, 'config.py')
+        else:
+            config_filename = os.path.join(self.product_location, 'config')
         config = open(config_filename, 'wb')
         config.write(maildrop_config_template % config_option)
 
