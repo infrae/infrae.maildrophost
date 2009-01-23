@@ -2,12 +2,11 @@
 History
 =======
 
-1.1.0
------
+1.1 (2009-01-23)
+----------------
 
-* Added support for MaildropHost >= 1.22
-  (added a version option, so the recipe can 
-   guess the config file name)
+* Added support for MaildropHost >= 1.22 (added a version option, so
+  the recipe can guess the config file name)
 
 1.0.1
 -----
