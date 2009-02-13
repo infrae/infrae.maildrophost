@@ -2,10 +2,19 @@
 History
 =======
 
-1.2 (unreleased)
+1.2 (2009-02-13)
 ----------------
 
-* ...
+* Fix ``download-cache`` vs ``download-directory``. Don't assume the
+  user already set it.
+
+* Add options ``wait_interval``, ``add_messageid``, ``batch``,
+  ``tls``, ``pid_file``, ``spool_dir``, ``mail_dir``.
+
+* Remove the relative to buildout directory option ``mail-dir`` which
+  was almost useless.
+
+* Improve the control script.
 
 1.1 (2009-01-23)
 ----------------

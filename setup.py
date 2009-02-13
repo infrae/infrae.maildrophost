@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+# Copyright (c) 2007-2009 Infrae. All rights reserved.
+# See also LICENSE.txt
+# $Id$
+
 from setuptools import setup, find_packages
 
 name = "infrae.maildrophost"
@@ -6,7 +11,8 @@ setup(name = name,
       author = "Sylvain Viollon",
       author_email = "info@infrae.com",
       description = "Recipe to install and setup maildrophost server",
-      long_description = open('README.txt').read() + open('docs/HISTORY.txt').read(),
+      long_description = open('README.txt').read() + \
+          open('docs/HISTORY.txt').read(),
       license = "ZPL 2.1",
       keywords = "maildrophost buildout",
       classifiers = ["Framework :: Buildout",
@@ -14,7 +20,11 @@ setup(name = name,
       url = 'http://www.python.org/pypi/' + name,
       packages = find_packages(),
       namespace_packages = ['infrae'],
-      install_requires = ['zc.buildout', 'zc.recipe.egg', 'setuptools'],
-      entry_points = {'zc.buildout':
-                      ['default = %s:Recipe' % name]},
+      install_requires = [
+        'zc.buildout',
+        'zc.recipe.egg',
+        'setuptools'],
+      entry_points = {
+        'zc.buildout':
+            ['default = %s:Recipe' % name]},
     )
