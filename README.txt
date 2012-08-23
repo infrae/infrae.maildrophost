@@ -1,3 +1,4 @@
+===================
 infrae.maildrophost
 ===================
 
@@ -40,7 +41,7 @@ Spool and PID files are put by default in the ``var/maildrop``
 directory, so data is preserved when update (if there is any data).
 
 Settings
---------
+========
 
 You can customize some of settings of `MaildropHost`_:
 
@@ -89,7 +90,7 @@ You can customize some of settings of `MaildropHost`_:
 
 
 Latest version
---------------
+==============
 
 The latest version is available in a `Subversion repository
 <https://svn.infrae.com/buildout/infrae.maildrophost/trunk>`_.
