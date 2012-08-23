@@ -3,44 +3,87 @@
 # See also LICENSE.txt
 # $Id$
 
+import subprocess
 import os, signal, sys
+import pkg_resources
 
-def maildrop_start(config):
+
+def maildrop_start(configuration, pidfile):
     """Start maildrophost.
     """
-    mconfig = os.path.join(config['base'], 'config.py')
-    if not os.path.isfile(mconfig):
-        # probably using maildrophost >= 1.22
-        mconfig = os.path.join(config['base'], 'config')
+    requirement = list(pkg_resources.parse_requirements(
+            'Products.MaildropHost'))[0]
+    distribution = pkg_resources.working_set.find(requirement)
+    if distribution is None:
+        print>>sys.stderr, 'Could not find MaildropHost egg.'
+        sys.exit(1)
+    script = os.path.join(
+            distribution.location,
+            'Products',
+            'MaildropHost',
+            'maildrop',
+            'maildrop.py')
+    if not os.path.isfile(script):
+        print>>sys.stderr, 'Could not find MaildropHost server script.'
+        sys.exit(1)
+    if not os.path.isfile(configuration):
+        print>>sys.stderr, 'Could not find MaildropHost configuration.'
+        sys.exit(1)
+    subprocess.Popen([sys.executable, script, configuration])
 
-    mscript = os.path.sep.join(('maildrop', 'maildrop.py'))
-    mscript = os.path.join(config['base'], mscript)
-    os.execlp(sys.executable, sys.executable, mscript, mconfig)
 
-def maildrop_stop(config):
+def maildrop_stop(configuration, pidfile):
     """Stop maildrophost.
     """
-    if not os.access(config['pidfile'], os.R_OK):
-        print "Can't find PID file. Daemon probably not running."
-        return 1
-    pid = int(open(config['pidfile']).read())
+    if not os.access(pidfile, os.R_OK):
+        print>>sys.stderr, "Can't find PID file. Daemon probably not running."
+        sys.exit(1)
+    try:
+        pid = int(open(pidfile).read())
+    except ValueError:
+        print>>sys.stderr, "Invalid PID file."
+        os.unlink(pidfile)
+        sys.exit(1)
     os.kill(pid, signal.SIGTERM)
-    os.unlink(config['pidfile'])
-    print 'Stop %d daemon.' % pid
+    os.unlink(pidfile)
+    print 'Daemon with PID %d stopped.' % pid
     return 0
 
 
-def main(config, action=None):
-    if action:
-        if action[0] == 'start':
-            return maildrop_start(config)
-        elif action[0] == 'stop':
-            return maildrop_stop(config)
-        elif action[0] == 'restart':
-            maildrop_stop(config)
-            return maildrop_start(config)
-    print "usage: %s [start|stop|restart]" % sys.argv[0]
-    return 1
+def maildrop_status(configuration, pidfile):
+    """Look after the pid file.
+    """
+    if os.path.isfile(pidfile):
+        try:
+            pid = int(open(pidfile).read())
+        except ValueError:
+            print 'Invalid PID file, unlinking it.'
+            os.unlink(pidfile)
+        else:
+            print 'Daemon with PID %s.' % pid
+    else:
+        print 'No PID file.'
+
+
+def usage():
+    print "usage: %s [start|stop|restart|status]" % sys.argv[0]
+    sys.exit(-255)
+
+
+def main(options):
+    if len(sys.argv) != 2:
+        return usage()
+    action = sys.argv[1]
+    if action == 'start':
+        return maildrop_start(**options)
+    elif action == 'stop':
+        return maildrop_stop(**options)
+    elif action == 'restart':
+        maildrop_stop(**options)
+        return maildrop_start(**options)
+    elif action == 'status':
+        return maildrop_status(**options)
+    return usage()
 
 
 

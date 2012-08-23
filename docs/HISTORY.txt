@@ -2,10 +2,11 @@
 History
 =======
 
-1.3 (unreleased)
+2.0 (unreleased)
 ----------------
 
-* ...
+* Update recipe to work the egg distribution of MaildropHost, still
+  creating the start and stop script for the daemon.
 
 1.2 (2009-02-13)
 ----------------

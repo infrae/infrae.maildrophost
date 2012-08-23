@@ -6,8 +6,10 @@
 from setuptools import setup, find_packages
 
 name = "infrae.maildrophost"
+version = "2.0dev"
+
 setup(name = name,
-      version = "1.3",
+      version = version,
       author = "Sylvain Viollon",
       author_email = "info@infrae.com",
       description = "Recipe to install and setup maildrophost server",

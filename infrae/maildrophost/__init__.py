@@ -3,12 +3,9 @@
 # See also LICENSE.txt
 # $Id$
 
-import os, re, shutil, tempfile, urllib2, urlparse
+import os
 import zc.buildout, zc.recipe.egg
-import setuptools
 
-URL = ('http://www.dataflake.org/software/maildrophost/'
-       'maildrophost_%s/MaildropHost-%s.tgz')
 
 class Recipe(object):
 
@@ -16,57 +13,24 @@ class Recipe(object):
         self.buildout = buildout
         self.name = name
         self.options = options
-        self.location = options.get(
-            'target',
-            os.path.join(
-                self.buildout['buildout']['parts-directory'],
-                self.name))
-        options['location'] = self.location
-        self.product_location = os.path.join(self.location, 'MaildropHost')
-        self.url = options.get('url', None)
-        if self.url is None:
-            version = options.get('version')
-            self.url = URL % (version, version)
-
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
         self.mail_dir = self.options.get('mail_dir', None)
         if not self.mail_dir:
             self.mail_dir = os.path.join(
                 self.buildout['buildout']['directory'], 'var', 'maildrop',)
+        self.configuration = self.options.get('maildrophost.cfg', None)
+        if not self.configuration:
+            self.configuration = os.path.join(
+                self.buildout['buildout']['directory'], 'maildrophost.cfg')
+            options['configuration'] = self.configuration
+        self.pid_file = self.options.get('pid_file', None)
+        if not self.pid_file:
+            self.pid_file = os.path.join(self.mail_dir, 'maildrop.pid')
+
 
     def install(self):
         """Install the maildrophost server
         """
-        download_dir = self.buildout['buildout'].get(
-            'download-cache',
-            os.path.join(self.buildout['buildout']['directory'], 'downloads'))
-
-        if not os.path.isdir(download_dir):
-            os.mkdir(download_dir)
-
-        _, _, urlpath, _, _, _ = urlparse.urlparse(self.url)
-        tmp = tempfile.mkdtemp('buildout-'+self.name)
-        try:
-            fname = os.path.join(download_dir, urlpath.split('/')[-1])
-            if not os.path.exists(fname):
-                f = open(fname, 'wb')
-                try:
-                    f.write(urllib2.urlopen(self.url).read())
-                except:
-                    os.remove(fname)
-                    raise zc.buildout.UserError(
-                        "Failed to download URL %s: %s" % (self.url, str(e)))
-                f.close()
-
-            setuptools.archive_util.unpack_archive(fname, tmp)
-            files = os.listdir(tmp)
-            if not os.path.isdir(self.location):
-                os.mkdir(self.location)
-            shutil.move(os.path.join(tmp, files[0]), self.product_location)
-        finally:
-            shutil.rmtree(tmp)
-
-
         return self.update()
 
     def _build_config(self):
@@ -82,15 +46,12 @@ class Recipe(object):
         if not os.path.exists(spool_dir):
             os.makedirs(spool_dir)
 
-        pid_file = self.options.get(
-            'pid_file', None) or os.path.join(self.mail_dir, 'maildrop.pid')
-
         config_option = dict(
             smtp_host=self.options.get('smtp_host', 'localhost'),
             smtp_port=self.options.get('smtp_port', '25'),
             maildrop_dir=self.mail_dir,
             spool_dir=spool_dir,
-            pid_file=pid_file,
+            pid_file=self.pid_file,
             executable=self.buildout['buildout']['executable'],
             login=self.options.get('login', ''),
             password=self.options.get('password', ''),
@@ -101,42 +62,31 @@ class Recipe(object):
             batch=self.options.get('batch', '0'),
             tls=self.options.get('tls', '0'),)
 
-        version = self.options.get('version', '0.00')
-        major, minor = version.split('.')
-        if int(major) < 2 and int(minor) < 22:
-            config_filename = os.path.join(self.product_location, 'config.py')
-        else:
-            config_filename = os.path.join(self.product_location, 'config')
-        config = open(config_filename, 'wb')
+        config = open(self.configuration, 'wb')
         config.write(maildrop_config_template % config_option)
+        return [self.configuration]
 
     def _build_script(self):
         """Create the startup script in the bin directory.
         """
+        requirements, ws = self.egg.working_set(['infrae.maildrophost',
+                                                 'Products.MaildropHost'])
 
-        requirements, ws = self.egg.working_set(['infrae.maildrophost'])
-        pidfile=self.options.get(
-            'pid_file', None) or os.path.join(self.mail_dir, 'maildrop.pid')
-        config = dict(base=self.product_location,
-                      pidfile=pidfile)
-
-        zc.buildout.easy_install.scripts(
+        return zc.buildout.easy_install.scripts(
             [(self.name, 'infrae.maildrophost.ctl', 'main')],
-            ws, self.options['executable'], self.options['bin-directory'],
-            arguments=('%r, sys.argv[1:]' % config))
+            ws, self.options['executable'],
+            self.options['bin-directory'],
+            arguments={'pidfile': self.pid_file,
+                       'configuration': self.configuration})
 
     def update(self):
         """Update the maildrophost server
         """
+        files = []
+        files.extend(self._build_config())
+        files.extend(self._build_script())
+        return files
 
-        try:
-            self._build_config()
-            self._build_script()
-        except:
-            shutil.rmtree(self.location)
-            raise
-
-        return self.location
 
 maildrop_config_template="""
 PYTHON=r"%(executable)s"

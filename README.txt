@@ -1,9 +1,14 @@
 infrae.maildrophost
 ===================
 
-``infrae.maildrophost`` is used to download and install `MaildropHost`_
-for Zope, and configure a maildrophost server using the same
-configuration than the Zope product.
+``infrae.maildrophost`` is used to configure a maildrophost server and
+`MaildropHost`_ product using the same configuration, and create a
+management script for the maildrophost server.
+
+In addition to those tasks, it used to download and install
+`MaildropHost`_ when it was not distributed as an egg. If you are
+looking for those features, please have a look at the version 1.x of
+this recipe.
 
 Example in buildout::
 
@@ -16,39 +21,23 @@ Example in buildout::
   recipe = infrae.maildrophost
   smtp_host = localhost
   smtp_port = 25
-  version = 1.22
 
   [instance]
   ...
-  products =
-       ...
-       ${maildrophost:location}
-       ...
-  ...
+  eggs +=
+     Products.MaildropHost
+  zope-conf-additional +=
+  <product-config maildrophost>
+    config-path-application ${maildrophost:configuration}
+  </product-config>
 
-This will install `MaildropHost`_, create configuration files for the
+
+This will create the configuration file ``maildrophost.cfg`` for the
 daemon, and put a start/stop script in the ``bin`` directory of the
 buildout tree.
 
 Spool and PID files are put by default in the ``var/maildrop``
 directory, so data is preserved when update (if there is any data).
-
-You can use the ``target`` option to specify a different folder to
-install the product, for instance if you already have a part called
-``dist-products`` for your Zope products::
-
-  target = ${dist-products:location}
-
-The version option will be used to generate the download url::
-
-  http://www.dataflake.org/software/maildrophost/maildrophost_<version>/MaildropHost-<version>.tgz
-
-In recent versions of `MaildropHost`_ (>= 1.22) the config file has
-changed name, setting the ``version`` option will make the recipe
-choose the right name.
-
-It is also possible to override the download url by setting a ``url``
-option.
 
 Settings
 --------
