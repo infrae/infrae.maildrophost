@@ -6,7 +6,7 @@
 from setuptools import setup, find_packages
 
 name = "infrae.maildrophost"
-version = "2.0"
+version = "2.1dev"
 
 setup(name = name,
       version = version,
