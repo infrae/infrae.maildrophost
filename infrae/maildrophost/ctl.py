@@ -3,66 +3,107 @@
 # See also LICENSE.txt
 # $Id$
 
-import subprocess
-import os, signal, sys
+import os
+import sys
 import pkg_resources
+import psutil
+
+
+def is_process_running(pid):
+    """Return if a process with a given PID is actually running
+    """
+    try:
+        p = psutil.Process(pid)
+        return p.is_running()
+    except (psutil.NoSuchProcess, ValueError):
+        return False
+
+
+def maildrop_pid(pidfile):
+    """Return the PID in pidfile if any
+    """
+    try:
+        with open(pidfile) as pf:
+            pid = int(pf.read())
+            return pid
+    ## file errors
+    except IOError:
+        print>>sys.stdout, 'No pidfile found.'
+    except ValueError:
+        print>>sys.stdout, 'Invalid pidfile, file will be deleted.'
+        ## remove pidfile
+        try:
+            os.unlink(pidfile)
+        except OSError:
+            ## pidfile could have already been deleted, be silent.
+            pass
+    return -1
 
 
 def maildrop_start(configuration, pidfile):
     """Start maildrophost.
     """
     requirement = list(pkg_resources.parse_requirements(
-            'Products.MaildropHost'))[0]
+        'Products.MaildropHost'))[0]
+
     distribution = pkg_resources.working_set.find(requirement)
     if distribution is None:
         print>>sys.stderr, 'Could not find MaildropHost egg.'
         sys.exit(1)
-    script = os.path.join(
-            distribution.location,
-            'Products',
-            'MaildropHost',
-            'maildrop',
-            'maildrop.py')
+
+    script = os.path.join(os.path.dirname(__file__), 'maildrop.py')
     if not os.path.isfile(script):
         print>>sys.stderr, 'Could not find MaildropHost server script.'
         sys.exit(1)
+
     if not os.path.isfile(configuration):
         print>>sys.stderr, 'Could not find MaildropHost configuration.'
         sys.exit(1)
-    subprocess.Popen([sys.executable, script, configuration])
+
+    ## if there's no running process then start one
+    pid = maildrop_pid(pidfile)
+    if not is_process_running(pid):
+        psutil.Popen([sys.executable, script, configuration])
+        print>>sys.stdout, 'MaildropHost STARTED.'
+    else:
+        print>>sys.stderr, 'MaildropHost is already running with PID %s.' % pid
+        sys.exit(1)
 
 
 def maildrop_stop(configuration, pidfile):
     """Stop maildrophost.
     """
-    if not os.access(pidfile, os.R_OK):
-        print>>sys.stderr, "Can't find PID file. Daemon probably not running."
-        sys.exit(1)
+    pid = maildrop_pid(pidfile)
     try:
-        pid = int(open(pidfile).read())
-    except ValueError:
-        print>>sys.stderr, "Invalid PID file."
-        os.unlink(pidfile)
+        p = psutil.Process(pid)
+    except (psutil.NoSuchProcess, ValueError):
+        print>>sys.stderr, 'MaildropHost is probably NOT running.'
         sys.exit(1)
-    os.kill(pid, signal.SIGTERM)
-    os.unlink(pidfile)
-    print 'Daemon with PID %d stopped.' % pid
-    return 0
+    p.terminate()
+    print>>sys.stdout, 'MaildropHost STOPPED.'
+    try:
+        p.wait(2)
+    except psutil.TimeoutExpired:
+        print>>sys.stdout, 'Termination timed out, process will be killed.'
+        p.kill()
+        print>>sys.stdout, 'MaildropHost KILLED.'
+    ## remove pidfile
+    try:
+        os.unlink(pidfile)
+    except OSError:
+        ## pidfile could have already been deleted, be silent.
+        pass
 
 
 def maildrop_status(configuration, pidfile):
-    """Look after the pid file.
+    """Look after the MaildropHost process status.
     """
-    if os.path.isfile(pidfile):
-        try:
-            pid = int(open(pidfile).read())
-        except ValueError:
-            print 'Invalid PID file, unlinking it.'
-            os.unlink(pidfile)
-        else:
-            print 'Daemon with PID %s.' % pid
+    pid = maildrop_pid(pidfile)
+    if is_process_running(pid):
+        print>>sys.stdout, 'MaildropHost is running with PID %s' % pid
     else:
-        print 'No PID file.'
+        print>>sys.stderr, 'MaildropHost is probably NOT running.'
+        sys.exit(1)
 
 
 def usage():
@@ -84,6 +125,3 @@ def main(options):
     elif action == 'status':
         return maildrop_status(**options)
     return usage()
-
-
-

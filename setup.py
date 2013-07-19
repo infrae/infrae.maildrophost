@@ -25,7 +25,8 @@ setup(name = name,
       install_requires = [
         'zc.buildout',
         'zc.recipe.egg',
-        'setuptools'],
+        'setuptools',
+        'psutil'],
       entry_points = {
         'zc.buildout':
             ['default = %s:Recipe' % name]},
