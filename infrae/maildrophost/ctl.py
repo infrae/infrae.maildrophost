@@ -5,8 +5,9 @@
 
 import os
 import sys
-import pkg_resources
 import psutil
+
+SCRIPT = os.path.join(os.path.dirname(__file__), 'maildrop.py')
 
 
 def is_process_running(pid):
@@ -43,16 +44,7 @@ def maildrop_pid(pidfile):
 def maildrop_start(configuration, pidfile):
     """Start maildrophost.
     """
-    requirement = list(pkg_resources.parse_requirements(
-        'Products.MaildropHost'))[0]
-
-    distribution = pkg_resources.working_set.find(requirement)
-    if distribution is None:
-        print>>sys.stderr, 'Could not find MaildropHost egg.'
-        sys.exit(1)
-
-    script = os.path.join(os.path.dirname(__file__), 'maildrop.py')
-    if not os.path.isfile(script):
+    if not os.path.isfile(SCRIPT):
         print>>sys.stderr, 'Could not find MaildropHost server script.'
         sys.exit(1)
 
@@ -63,7 +55,7 @@ def maildrop_start(configuration, pidfile):
     ## if there's no running process then start one
     pid = maildrop_pid(pidfile)
     if not is_process_running(pid):
-        psutil.Popen([sys.executable, script, configuration])
+        psutil.Popen([sys.executable, SCRIPT, configuration])
         print>>sys.stdout, 'MaildropHost STARTED.'
     else:
         print>>sys.stderr, 'MaildropHost is already running with PID %s.' % pid

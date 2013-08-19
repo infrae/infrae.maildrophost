@@ -69,8 +69,7 @@ class Recipe(object):
     def _build_script(self):
         """Create the startup script in the bin directory.
         """
-        requirements, ws = self.egg.working_set(['infrae.maildrophost',
-                                                 'Products.MaildropHost'])
+        requirements, ws = self.egg.working_set(['infrae.maildrophost',])
 
         return zc.buildout.easy_install.scripts(
             [(self.name, 'infrae.maildrophost.ctl', 'main')],
