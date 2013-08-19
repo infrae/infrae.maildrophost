@@ -62,4 +62,4 @@ History
 * First release, download and install MaildropHost product, make a
   ``config.py`` and create simple script for start and stop purpose.
 
-.. psutil: https://pypi.python.org/pypi/psutil
+.. _psutil: https://pypi.python.org/pypi/psutil
