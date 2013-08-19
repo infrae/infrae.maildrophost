@@ -12,6 +12,9 @@ History
 * Update the start/stop script to be more reliable with the help of
   `psutil`_.
 
+.. _psutil: https://pypi.python.org/pypi/psutil
+
+
 2.0 (2012-08-23)
 ----------------
 
@@ -61,5 +64,3 @@ History
 
 * First release, download and install MaildropHost product, make a
   ``config.py`` and create simple script for start and stop purpose.
-
-.. _psutil: https://pypi.python.org/pypi/psutil
