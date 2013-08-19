@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
+# Copyright (c) 2004-2013 Jens Vagelpohl and Contributors. All Rights Reserved.
+# See also LICENSE.txt
 ##############################################################################
 #
-# Copyright (c) 2004-2009 Jens Vagelpohl and Contributors. All Rights Reserved.
 #
 # This software is subject to the provisions of the Zope Public License,
 # Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
