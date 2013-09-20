@@ -3,7 +3,7 @@
 # See also LICENSE.txt
 # $Id$
 
-import os, re, shutil, tempfile, urllib2, urlparse
+import os, shutil, tempfile, urllib2, urlparse
 import zc.buildout, zc.recipe.egg
 import setuptools
 
@@ -28,6 +28,9 @@ class Recipe(object):
             version = options.get('version')
             self.url = URL % (version, version)
 
+        self.dont_create_directories = options.get(
+            'dont_create_directories',
+            'no').lower() in set(['yes', 'on' , 'true'])
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
         self.mail_dir = self.options.get('mail_dir', None)
         if not self.mail_dir:
@@ -66,7 +69,6 @@ class Recipe(object):
         finally:
             shutil.rmtree(tmp)
 
-
         return self.update()
 
     def _build_config(self):
@@ -74,16 +76,15 @@ class Recipe(object):
         directory used by the maildrop server.
         """
 
-        if not os.path.exists(self.mail_dir):
-            os.makedirs(self.mail_dir)
-
         spool_dir = self.options.get(
             'spool_dir', None) or os.path.join(self.mail_dir, 'spool')
-        if not os.path.exists(spool_dir):
-            os.makedirs(spool_dir)
-
         pid_file = self.options.get(
             'pid_file', None) or os.path.join(self.mail_dir, 'maildrop.pid')
+        if not self.dont_create_directories:
+            if not os.path.exists(self.mail_dir):
+                os.makedirs(self.mail_dir)
+            if not os.path.exists(spool_dir):
+                os.makedirs(spool_dir)
 
         config_option = dict(
             smtp_host=self.options.get('smtp_host', 'localhost'),
@@ -113,7 +114,6 @@ class Recipe(object):
     def _build_script(self):
         """Create the startup script in the bin directory.
         """
-
         requirements, ws = self.egg.working_set(['infrae.maildrophost'])
         pidfile=self.options.get(
             'pid_file', None) or os.path.join(self.mail_dir, 'maildrop.pid')
@@ -128,7 +128,6 @@ class Recipe(object):
     def update(self):
         """Update the maildrophost server
         """
-
         try:
             self._build_config()
             self._build_script()

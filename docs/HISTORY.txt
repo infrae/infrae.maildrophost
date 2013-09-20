@@ -2,6 +2,12 @@
 History
 =======
 
+1.2.1 (2013-09-20)
+------------------
+
+* Add an option ``dont_create_directories`` to disable the creation of
+  directories.
+
 1.2 (2009-02-13)
 ----------------
 
