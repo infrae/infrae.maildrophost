@@ -29,7 +29,7 @@ Example in buildout::
      Products.MaildropHost
   zope-conf-additional +=
   <product-config maildrophost>
-    config-path-application ${maildrophost:configuration}
+    config-path-application ${maildrophost:maildrophost.cfg}
   </product-config>
 
 
@@ -87,6 +87,48 @@ You can customize some of settings of `MaildropHost`_:
 ``wait_interval``
   Must be an interger or float which say how much time the daemon
   should wait between sending two mails to the mail server.
+
+``supervised_daemon``
+  If 1, the internal maildrop script will remain running in the
+  foreground.  This is mostly useful when you start the main
+  maildrophost script itself on the foreground with ``bin/maildrophost
+  fg``.  See the `Configuration for supervisor`_ section.
+
+``maildrophost.cfg``
+  Specify an alternative path for storing the generated
+  ``maildrophost.cfg`` file.  Note that this file gets rewritten each
+  time you run buildout.  The default value is
+  ``${buildout:directory}/maildrophost.cfg``.
+
+
+Configuration for supervisor
+============================
+
+Buildout generates a ``bin/maildrophost`` script (if you use
+``maildrophost`` as the name of the buildout section).  When calling
+``bin/maildrophost start`` this script does some checks and basically
+calls ``python maildrop.py maildrophost.cfg`` and quits, without
+waiting to for the ``maildrop.py`` script to exit properly.  The
+``maildrop.py`` script creates a fork of itself and exits.
+
+This is not helpful when you want to use maildrophost in combination
+with `supervisor <http://supervisord.org>`_.  If you want to do that
+you should enable the ``supervised_daemon`` option and let supervisor
+start the maildrophost script on the foreground.  Sample config would
+be this::
+
+  [maildrophost]
+  recipe = infrae.maildrophost
+  smtp_host = localhost
+  smtp_port = 25
+  supervised_daemon = 1
+
+  [supervisor]
+  recipe = collective.recipe.supervisor
+  ...
+  programs =
+      ...
+      40 maildrop ${buildout:directory}/bin/maildrophost [fg] true
 
 
 Latest version

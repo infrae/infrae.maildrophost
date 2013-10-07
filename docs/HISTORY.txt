@@ -2,10 +2,14 @@
 History
 =======
 
-2.2 (unreleased)
+2.2 (2013-10-07)
 ----------------
 
-* ...
+* Add ``fg`` command line option to start the script on the
+  foreground.  For best results, combine this with enabling the
+  ``supervised_daemon`` option. Patch provided by Maurits van Rees
+  from Zest Software.
+
 
 2.1 (2013-08-19)
 ----------------

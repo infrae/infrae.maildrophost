@@ -3,9 +3,16 @@
 # See also LICENSE.txt
 # $Id$
 
+import atexit
 import os
+import signal
+import subprocess
 import sys
 import psutil
+
+from maildrop import write_pid, exit_function, handle_sigterm
+from stringparse import parse_assignments
+from stringparse import ParserSyntaxError
 
 SCRIPT = os.path.join(os.path.dirname(__file__), 'maildrop.py')
 
@@ -62,6 +69,48 @@ def maildrop_start(configuration, pidfile):
         sys.exit(1)
 
 
+def maildrop_fg(configuration, pidfile):
+    """Start maildrophost in the foreground.
+
+    If you use this *and* you set DEBUG or SUPERVISED_DAEMON to a true
+    value, it should be a fine configuration to use with supervisor.
+    """
+    if not os.path.isfile(SCRIPT):
+        print>>sys.stderr, 'Could not find MaildropHost server script.'
+        sys.exit(1)
+
+    if not os.path.isfile(configuration):
+        print>>sys.stderr, 'Could not find MaildropHost configuration.'
+        sys.exit(1)
+
+    ## if there's no running process then start one
+    pid = maildrop_pid(pidfile)
+    if not is_process_running(pid):
+        print>>sys.stdout, 'Starting MaildropHost...'
+        # We will not fork, so write the pid of the current script in
+        # the pidfile.
+
+        try:
+            config = dict(parse_assignments(open(configuration).read()))
+        except ParserSyntaxError:
+            print>>sys.stderr, 'Cannot load config from "%s"' % configuration
+            sys.exit(1)
+        if not config['SUPERVISED_DAEMON']:
+            print>>sys.stderr, (
+                'When running in foreground mode SUPERVISED_DAEMON '
+                'must be turned on in the configuration file at "%s"' %
+                configuration)
+            sys.exit(1)
+
+        write_pid(pidfile, os.getpid())
+        atexit.register(exit_function, pidfile)
+        signal.signal(signal.SIGTERM, handle_sigterm)
+        subprocess.call([sys.executable, SCRIPT, configuration])
+    else:
+        print>>sys.stderr, 'MaildropHost is already running with PID %s.' % pid
+        sys.exit(1)
+
+
 def maildrop_stop(configuration, pidfile):
     """Stop maildrophost.
     """
@@ -99,7 +148,7 @@ def maildrop_status(configuration, pidfile):
 
 
 def usage():
-    print "usage: %s [start|stop|restart|status]" % sys.argv[0]
+    print "usage: %s [start|fg|stop|restart|status]" % sys.argv[0]
     sys.exit(-255)
 
 
@@ -109,6 +158,8 @@ def main(options):
     action = sys.argv[1]
     if action == 'start':
         return maildrop_start(**options)
+    elif action == 'fg':
+        return maildrop_fg(**options)
     elif action == 'stop':
         return maildrop_stop(**options)
     elif action == 'restart':
