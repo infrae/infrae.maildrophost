@@ -134,7 +134,7 @@ be this::
 Latest version
 ==============
 
-The latest version is available in a `Subversion repository
-<https://svn.infrae.com/buildout/infrae.maildrophost/trunk>`_.
+The latest version is available in a `Git repository
+<https://github.com/infrae/infrae.maildrophost>`_.
 
 .. _MaildropHost: http://www.dataflake.org/software/maildrophost

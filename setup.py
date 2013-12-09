@@ -12,7 +12,7 @@ setup(name = name,
       version = version,
       author = "Sylvain Viollon",
       author_email = "info@infrae.com",
-      description = "Recipe to install and setup maildrophost server",
+      description = "Buildout recipe to install and setup maildrophost server",
       long_description = open('README.txt').read() + \
           open('docs/HISTORY.txt').read(),
       license = "ZPL 2.1",
